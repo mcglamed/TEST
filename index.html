@@ -1,0 +1,2120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Traveling Wave Explorer</title>
+
+  <style>
+    :root {
+      --blue: #156082;
+      --light-blue: #eaf4f8;
+      --border: #c8d3d9;
+      --text: #1f2933;
+      --muted: #5d6971;
+      --background: #f4f6f7;
+      --panel: #ffffff;
+      --phase: #111111;
+      --group: #156082;
+      --accent: #b64a36;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: Calibri, Arial, Helvetica, sans-serif;
+      background: var(--background);
+    }
+
+    header {
+      padding: 24px 32px;
+      color: white;
+      background: var(--blue);
+    }
+
+    header h1 {
+      margin: 0 0 8px 0;
+      font-size: 2rem;
+    }
+
+    header p {
+      max-width: 1000px;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .app-container {
+      display: grid;
+      grid-template-columns: 330px minmax(0, 1fr);
+      gap: 20px;
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 2px 7px rgba(0, 0, 0, 0.06);
+    }
+
+    .controls {
+      align-self: start;
+      padding: 20px;
+      position: sticky;
+      top: 12px;
+    }
+
+    .content {
+      min-width: 0;
+      padding: 20px;
+    }
+
+    h2,
+    h3 {
+      color: var(--blue);
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    h3 {
+      margin: 24px 0 12px 0;
+      padding-bottom: 5px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .control {
+      margin-bottom: 18px;
+    }
+
+    .control-label {
+      display: block;
+      margin-bottom: 7px;
+      font-weight: 700;
+    }
+
+    select,
+    input[type="range"] {
+      width: 100%;
+    }
+
+    select {
+      padding: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+    }
+
+    input[type="range"],
+    input[type="checkbox"] {
+      accent-color: var(--blue);
+    }
+
+    .range-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .value-box {
+      min-width: 70px;
+      padding: 4px 7px;
+      color: var(--blue);
+      text-align: center;
+      font-weight: 700;
+      background: var(--light-blue);
+      border-radius: 4px;
+    }
+
+    .checkbox-line {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 12px;
+    }
+
+    .checkbox-line label {
+      line-height: 1.3;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0;
+    }
+
+    button {
+      padding: 9px 14px;
+      color: white;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--blue);
+      border: 1px solid var(--blue);
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background: #0f4c68;
+    }
+
+    button.secondary {
+      color: var(--blue);
+      background: white;
+    }
+
+    button.secondary:hover {
+      background: var(--light-blue);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .metric {
+      padding: 14px;
+      text-align: center;
+      background: white;
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--blue);
+      border-radius: 6px;
+    }
+
+    .metric.phase {
+      border-top-color: var(--phase);
+    }
+
+    .metric.group {
+      border-top-color: var(--group);
+    }
+
+    .metric-label {
+      min-height: 36px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .metric-value {
+      margin-top: 8px;
+      color: var(--blue);
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .metric.phase .metric-value {
+      color: var(--phase);
+    }
+
+    .metric.group .metric-value {
+      color: var(--group);
+    }
+
+    .equation {
+      margin: 12px 0 20px 0;
+      padding: 12px;
+      text-align: center;
+      font-family: "Times New Roman", serif;
+      font-size: 1.2rem;
+      background: var(--light-blue);
+      border-left: 4px solid var(--blue);
+    }
+
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      height: 500px;
+      margin-bottom: 12px;
+      background: white;
+    }
+
+    .canvas-container.small {
+      height: 380px;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: white;
+      border: 1px solid var(--border);
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin: 8px 0 24px 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .legend-line {
+      width: 30px;
+      height: 3px;
+      background: black;
+    }
+
+    .legend-line.group {
+      background: var(--group);
+    }
+
+    .legend-line.phase {
+      background: var(--phase);
+    }
+
+    .legend-line.component {
+      height: 2px;
+      background: var(--accent);
+      opacity: 0.55;
+    }
+
+    #probabilitySection {
+      display: none;
+      margin-top: 30px;
+    }
+
+    .explanation {
+      margin: 24px 0;
+      padding: 18px;
+      line-height: 1.5;
+      background: var(--light-blue);
+      border-left: 5px solid var(--blue);
+    }
+
+    details {
+      margin-top: 20px;
+      padding: 14px;
+      background: #fbfcfc;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+
+    summary {
+      color: var(--blue);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .questions {
+      margin-top: 24px;
+      padding: 18px 22px;
+      background: #fff8db;
+      border-left: 5px solid #d4ad2f;
+    }
+
+    .questions li {
+      margin-bottom: 9px;
+      line-height: 1.45;
+    }
+
+    footer {
+      padding: 20px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media (max-width: 950px) {
+      .app-container {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        position: static;
+      }
+
+      .metrics {
+        grid-template-columns: repeat(2, minmax(130px, 1fr));
+      }
+    }
+
+    @media (max-width: 540px) {
+      header {
+        padding: 18px;
+      }
+
+      .app-container {
+        padding: 10px;
+      }
+
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .canvas-container {
+        height: 380px;
+      }
+
+      .canvas-container.small {
+        height: 330px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Traveling Wave Explorer</h1>
+
+    <p>
+      Investigate traveling waves, wave packets, phase velocity, group
+      velocity, and dispersion. Track the motion of individual carrier
+      crests and compare it with the motion of the packet envelope.
+    </p>
+  </header>
+
+  <main class="app-container">
+    <aside class="panel controls">
+      <h2>Wave Parameters</h2>
+
+      <div class="control">
+        <label class="control-label" for="waveMode">
+          Wave type
+        </label>
+
+        <select id="waveMode">
+          <option value="single">Single Traveling Wave</option>
+          <option value="two">Two-Wave Packet</option>
+          <option value="gaussian" selected>
+            Gaussian N-Wave Packet
+          </option>
+        </select>
+      </div>
+
+      <div class="control">
+        <label class="control-label" for="dispersion">
+          Dispersion relation
+        </label>
+
+        <select id="dispersion">
+          <option value="linear" selected>
+            Nondispersive: ω = ck
+          </option>
+
+          <option value="quadratic">
+            Quadratic: ω = αk²
+          </option>
+        </select>
+      </div>
+
+      <div class="control">
+        <label class="control-label" for="amplitude">
+          Amplitude, A
+        </label>
+
+        <div class="range-line">
+          <input
+            id="amplitude"
+            type="range"
+            min="0.1"
+            max="3"
+            value="1"
+            step="0.1"
+          >
+
+          <span id="amplitudeValue" class="value-box">1.0</span>
+        </div>
+      </div>
+
+      <div class="control">
+        <label class="control-label" for="k0">
+          Central wave number, k₀
+        </label>
+
+        <div class="range-line">
+          <input
+            id="k0"
+            type="range"
+            min="0.2"
+            max="3"
+            value="1"
+            step="0.05"
+          >
+
+          <span id="k0Value" class="value-box">1.00</span>
+        </div>
+      </div>
+
+      <div class="control" id="deltaKControl">
+        <label class="control-label" for="deltaK">
+          Wave-number width, Δk
+        </label>
+
+        <div class="range-line">
+          <input
+            id="deltaK"
+            type="range"
+            min="0.05"
+            max="1.5"
+            value="0.4"
+            step="0.05"
+          >
+
+          <span id="deltaKValue" class="value-box">0.40</span>
+        </div>
+      </div>
+
+      <div class="control" id="numberWavesControl">
+        <label class="control-label" for="numberWaves">
+          Number of waves, N
+        </label>
+
+        <div class="range-line">
+          <input
+            id="numberWaves"
+            type="range"
+            min="3"
+            max="101"
+            value="41"
+            step="2"
+          >
+
+          <span id="numberWavesValue" class="value-box">41</span>
+        </div>
+      </div>
+
+      <div class="control" id="linearParameterControl">
+        <label class="control-label" for="linearC">
+          Wave speed, c
+        </label>
+
+        <div class="range-line">
+          <input
+            id="linearC"
+            type="range"
+            min="0.1"
+            max="5"
+            value="1"
+            step="0.1"
+          >
+
+          <span id="linearCValue" class="value-box">1.0</span>
+        </div>
+      </div>
+
+      <div
+        class="control"
+        id="quadraticParameterControl"
+        style="display: none;"
+      >
+        <label class="control-label" for="quadraticAlpha">
+          Dispersion coefficient, α
+        </label>
+
+        <div class="range-line">
+          <input
+            id="quadraticAlpha"
+            type="range"
+            min="0.1"
+            max="2"
+            value="0.5"
+            step="0.05"
+          >
+
+          <span
+            id="quadraticAlphaValue"
+            class="value-box"
+          >
+            0.50
+          </span>
+        </div>
+      </div>
+
+      <h3>Animation</h3>
+
+      <div class="button-row">
+        <button id="playButton" type="button">Play</button>
+        <button id="pauseButton" type="button">Pause</button>
+
+        <button
+          id="resetButton"
+          class="secondary"
+          type="button"
+        >
+          Reset
+        </button>
+      </div>
+
+      <div class="control">
+        <label class="control-label" for="time">
+          Time, t
+        </label>
+
+        <div class="range-line">
+          <input
+            id="time"
+            type="range"
+            min="0"
+            max="40"
+            value="0"
+            step="0.02"
+          >
+
+          <span id="timeValue" class="value-box">0.00</span>
+        </div>
+      </div>
+
+      <div class="control">
+        <label class="control-label" for="animationSpeed">
+          Animation speed
+        </label>
+
+        <div class="range-line">
+          <input
+            id="animationSpeed"
+            type="range"
+            min="0.1"
+            max="3"
+            value="1"
+            step="0.1"
+          >
+
+          <span
+            id="animationSpeedValue"
+            class="value-box"
+          >
+            1.0×
+          </span>
+        </div>
+      </div>
+
+      <h3>Display</h3>
+
+      <div class="checkbox-line">
+        <input id="showComponents" type="checkbox">
+
+        <label for="showComponents">
+          Show component waves
+        </label>
+      </div>
+
+      <div class="checkbox-line">
+        <input id="showEnvelope" type="checkbox" checked>
+
+        <label for="showEnvelope">
+          Show packet envelope
+        </label>
+      </div>
+
+      <div class="checkbox-line">
+        <input id="showMarkers" type="checkbox" checked>
+
+        <label for="showMarkers">
+          Show phase and group markers
+        </label>
+      </div>
+
+      <div class="checkbox-line">
+        <input id="showProbability" type="checkbox">
+
+        <label for="showProbability">
+          Show squared amplitude |ψ|²
+        </label>
+      </div>
+
+      <div class="control">
+        <label class="control-label" for="xLimit">
+          Position range, ±x
+        </label>
+
+        <div class="range-line">
+          <input
+            id="xLimit"
+            type="range"
+            min="20"
+            max="100"
+            value="50"
+            step="5"
+          >
+
+          <span id="xLimitValue" class="value-box">50</span>
+        </div>
+      </div>
+    </aside>
+
+    <section class="panel content">
+      <h2>Velocities and Wave Parameters</h2>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-label">Central wavelength, λ₀</div>
+          <div id="lambdaMetric" class="metric-value">6.283</div>
+        </div>
+
+        <div class="metric">
+          <div class="metric-label">Angular frequency, ω₀</div>
+          <div id="omegaMetric" class="metric-value">1.000</div>
+        </div>
+
+        <div class="metric phase">
+          <div class="metric-label">Phase velocity, vₚ</div>
+          <div id="phaseVelocityMetric" class="metric-value">
+            1.000
+          </div>
+        </div>
+
+        <div class="metric group">
+          <div class="metric-label">Group velocity, v<sub>g</sub></div>
+          <div id="groupVelocityMetric" class="metric-value">
+            1.000
+          </div>
+        </div>
+      </div>
+
+      <h2>Dispersion Relation</h2>
+
+      <div id="dispersionEquation" class="equation">
+        ω(k) = ck
+      </div>
+
+      <div class="canvas-container small">
+        <canvas id="dispersionCanvas"></canvas>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <span class="legend-line phase"></span>
+          Secant slope = phase velocity
+        </div>
+
+        <div class="legend-item">
+          <span class="legend-line group"></span>
+          Tangent slope = group velocity
+        </div>
+      </div>
+
+      <h2 id="waveHeading">Gaussian Traveling Wave Packet</h2>
+
+      <div id="waveEquation" class="equation">
+        ψ(x,t) = Σ A(k) cos[kx − ω(k)t]
+      </div>
+
+      <div class="canvas-container">
+        <canvas id="waveCanvas"></canvas>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <span class="legend-line"></span>
+          Traveling wave packet
+        </div>
+
+        <div class="legend-item">
+          <span class="legend-line group"></span>
+          Envelope and group-velocity marker
+        </div>
+
+        <div class="legend-item">
+          <span class="legend-line phase"></span>
+          Phase-velocity marker
+        </div>
+
+        <div class="legend-item">
+          <span class="legend-line component"></span>
+          Component waves
+        </div>
+      </div>
+
+      <section id="probabilitySection">
+        <h2>Squared Amplitude</h2>
+
+        <div class="canvas-container">
+          <canvas id="probabilityCanvas"></canvas>
+        </div>
+      </section>
+
+      <div class="explanation">
+        <strong>Phase velocity</strong> describes the speed of a point
+        of constant phase, such as a carrier-wave crest:
+        <strong>vₚ = ω/k</strong>.
+        <br><br>
+        <strong>Group velocity</strong> describes the speed of the
+        wave-packet envelope:
+        <strong>v<sub>g</sub> = dω/dk</strong>.
+      </div>
+
+      <details>
+        <summary>Show mathematical details</summary>
+
+        <h3>Single traveling wave</h3>
+
+        <div class="equation">
+          ψ(x,t) = A cos(kx − ωt)
+        </div>
+
+        <p>
+          A point of constant phase satisfies
+          <strong>kx − ωt = constant</strong>. Therefore:
+        </p>
+
+        <div class="equation">
+          vₚ = dx/dt = ω/k
+        </div>
+
+        <h3>Wave packet</h3>
+
+        <div class="equation">
+          ψ(x,t) =
+          Σ A(k<sub>n</sub>)
+          cos[k<sub>n</sub>x − ω(k<sub>n</sub>)t]
+        </div>
+
+        <p>
+          When the component wave numbers occupy a narrow range around
+          k₀, the envelope approximately travels at:
+        </p>
+
+        <div class="equation">
+          v<sub>g</sub> =
+          dω/dk evaluated at k = k₀
+        </div>
+
+        <h3>Nondispersive relation</h3>
+
+        <div class="equation">
+          ω = ck,
+          &nbsp;&nbsp;
+          vₚ = c,
+          &nbsp;&nbsp;
+          v<sub>g</sub> = c
+        </div>
+
+        <h3>Quadratic relation</h3>
+
+        <div class="equation">
+          ω = αk²,
+          &nbsp;&nbsp;
+          vₚ = αk,
+          &nbsp;&nbsp;
+          v<sub>g</sub> = 2αk
+        </div>
+
+        <p>
+          The quadratic model has the same mathematical form as the
+          dispersion relation for a nonrelativistic free-particle
+          matter wave. Because the relation is nonlinear, different
+          wave-number components accumulate phase at different rates,
+          and the packet spreads.
+        </p>
+      </details>
+
+      <div class="questions">
+        <h2>Questions to Consider</h2>
+
+        <ol>
+          <li>
+            In the nondispersive case, how do the phase and group
+            velocities compare?
+          </li>
+
+          <li>
+            In the quadratic case, which moves faster: carrier crests
+            or the packet envelope?
+          </li>
+
+          <li>
+            Why does the Gaussian packet retain its shape in the
+            nondispersive case?
+          </li>
+
+          <li>
+            Why does the packet spread when the dispersion relation is
+            quadratic?
+          </li>
+
+          <li>
+            What happens to the initial spatial width when Δk is
+            increased?
+          </li>
+
+          <li>
+            Which velocity appears to describe the motion of
+            |ψ(x,t)|²?
+          </li>
+        </ol>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    NSE 234 Traveling Wave Demonstration
+  </footer>
+
+  <script>
+    "use strict";
+
+    const elements = {
+      waveMode: document.getElementById("waveMode"),
+      dispersion: document.getElementById("dispersion"),
+
+      amplitude: document.getElementById("amplitude"),
+      k0: document.getElementById("k0"),
+      deltaK: document.getElementById("deltaK"),
+      numberWaves: document.getElementById("numberWaves"),
+      linearC: document.getElementById("linearC"),
+      quadraticAlpha: document.getElementById("quadraticAlpha"),
+
+      time: document.getElementById("time"),
+      animationSpeed: document.getElementById("animationSpeed"),
+      xLimit: document.getElementById("xLimit"),
+
+      showComponents: document.getElementById("showComponents"),
+      showEnvelope: document.getElementById("showEnvelope"),
+      showMarkers: document.getElementById("showMarkers"),
+      showProbability: document.getElementById("showProbability"),
+
+      amplitudeValue: document.getElementById("amplitudeValue"),
+      k0Value: document.getElementById("k0Value"),
+      deltaKValue: document.getElementById("deltaKValue"),
+      numberWavesValue:
+        document.getElementById("numberWavesValue"),
+
+      linearCValue: document.getElementById("linearCValue"),
+      quadraticAlphaValue:
+        document.getElementById("quadraticAlphaValue"),
+
+      timeValue: document.getElementById("timeValue"),
+      animationSpeedValue:
+        document.getElementById("animationSpeedValue"),
+
+      xLimitValue: document.getElementById("xLimitValue"),
+
+      deltaKControl: document.getElementById("deltaKControl"),
+      numberWavesControl:
+        document.getElementById("numberWavesControl"),
+
+      linearParameterControl:
+        document.getElementById("linearParameterControl"),
+
+      quadraticParameterControl:
+        document.getElementById("quadraticParameterControl"),
+
+      lambdaMetric: document.getElementById("lambdaMetric"),
+      omegaMetric: document.getElementById("omegaMetric"),
+
+      phaseVelocityMetric:
+        document.getElementById("phaseVelocityMetric"),
+
+      groupVelocityMetric:
+        document.getElementById("groupVelocityMetric"),
+
+      dispersionEquation:
+        document.getElementById("dispersionEquation"),
+
+      waveHeading: document.getElementById("waveHeading"),
+      waveEquation: document.getElementById("waveEquation"),
+
+      dispersionCanvas:
+        document.getElementById("dispersionCanvas"),
+
+      waveCanvas: document.getElementById("waveCanvas"),
+
+      probabilityCanvas:
+        document.getElementById("probabilityCanvas"),
+
+      probabilitySection:
+        document.getElementById("probabilitySection"),
+
+      playButton: document.getElementById("playButton"),
+      pauseButton: document.getElementById("pauseButton"),
+      resetButton: document.getElementById("resetButton")
+    };
+
+    let animationRunning = false;
+    let previousTimestamp = null;
+
+
+    function linspace(start, stop, numberPoints) {
+      const values = new Array(numberPoints);
+      const step = (stop - start) / (numberPoints - 1);
+
+      for (let i = 0; i < numberPoints; i++) {
+        values[i] = start + i * step;
+      }
+
+      return values;
+    }
+
+
+    function omega(k, dispersionType, c, alpha) {
+      if (dispersionType === "linear") {
+        return c * k;
+      }
+
+      return alpha * k * k;
+    }
+
+
+    function phaseVelocity(k, dispersionType, c, alpha) {
+      return omega(k, dispersionType, c, alpha) / k;
+    }
+
+
+    function groupVelocity(k, dispersionType, c, alpha) {
+      if (dispersionType === "linear") {
+        return c;
+      }
+
+      return 2 * alpha * k;
+    }
+
+
+    function gaussianWeight(k, k0, sigmaK) {
+      return Math.exp(
+        -Math.pow(k - k0, 2) /
+        (2 * sigmaK * sigmaK)
+      );
+    }
+
+
+    function setupCanvas(canvas) {
+      const rectangle = canvas.getBoundingClientRect();
+      const pixelRatio = window.devicePixelRatio || 1;
+
+      canvas.width = Math.max(
+        1,
+        Math.round(rectangle.width * pixelRatio)
+      );
+
+      canvas.height = Math.max(
+        1,
+        Math.round(rectangle.height * pixelRatio)
+      );
+
+      const context = canvas.getContext("2d");
+
+      context.setTransform(
+        pixelRatio,
+        0,
+        0,
+        pixelRatio,
+        0,
+        0
+      );
+
+      return {
+        context: context,
+        width: rectangle.width,
+        height: rectangle.height
+      };
+    }
+
+
+    function xToPixel(value, minimum, maximum, left, right) {
+      return left +
+        (value - minimum) /
+        (maximum - minimum) *
+        (right - left);
+    }
+
+
+    function yToPixel(value, minimum, maximum, top, bottom) {
+      return bottom -
+        (value - minimum) /
+        (maximum - minimum) *
+        (bottom - top);
+    }
+
+
+    function formatTick(value, range) {
+      if (Math.abs(value) < 1e-10) {
+        return "0";
+      }
+
+      if (range >= 100) {
+        return value.toFixed(0);
+      }
+
+      if (range >= 10) {
+        return value.toFixed(1);
+      }
+
+      return value.toFixed(2);
+    }
+
+
+    function drawAxes(
+      context,
+      width,
+      height,
+      plot,
+      title,
+      xLabel,
+      yLabel
+    ) {
+      context.save();
+
+      context.fillStyle = "white";
+      context.fillRect(0, 0, width, height);
+
+      context.strokeStyle = "black";
+      context.lineWidth = 1;
+
+      context.strokeRect(
+        plot.left,
+        plot.top,
+        plot.right - plot.left,
+        plot.bottom - plot.top
+      );
+
+      const xRange = plot.xMaximum - plot.xMinimum;
+      const yRange = plot.yMaximum - plot.yMinimum;
+
+      context.font = "14px Calibri, Arial, sans-serif";
+      context.fillStyle = "black";
+
+      const xTicks = 8;
+
+      for (let i = 0; i <= xTicks; i++) {
+        const value =
+          plot.xMinimum + xRange * i / xTicks;
+
+        const pixelX = xToPixel(
+          value,
+          plot.xMinimum,
+          plot.xMaximum,
+          plot.left,
+          plot.right
+        );
+
+        context.beginPath();
+        context.moveTo(pixelX, plot.bottom);
+        context.lineTo(pixelX, plot.bottom + 6);
+        context.stroke();
+
+        context.textAlign = "center";
+        context.textBaseline = "top";
+
+        context.fillText(
+          formatTick(value, xRange),
+          pixelX,
+          plot.bottom + 9
+        );
+      }
+
+      const yTicks = 6;
+
+      for (let i = 0; i <= yTicks; i++) {
+        const value =
+          plot.yMinimum + yRange * i / yTicks;
+
+        const pixelY = yToPixel(
+          value,
+          plot.yMinimum,
+          plot.yMaximum,
+          plot.top,
+          plot.bottom
+        );
+
+        context.beginPath();
+        context.moveTo(plot.left - 6, pixelY);
+        context.lineTo(plot.left, pixelY);
+        context.stroke();
+
+        context.textAlign = "right";
+        context.textBaseline = "middle";
+
+        context.fillText(
+          formatTick(value, yRange),
+          plot.left - 10,
+          pixelY
+        );
+      }
+
+      if (
+        plot.yMinimum < 0 &&
+        plot.yMaximum > 0
+      ) {
+        const zeroY = yToPixel(
+          0,
+          plot.yMinimum,
+          plot.yMaximum,
+          plot.top,
+          plot.bottom
+        );
+
+        context.save();
+        context.strokeStyle = "#999999";
+        context.setLineDash([4, 4]);
+
+        context.beginPath();
+        context.moveTo(plot.left, zeroY);
+        context.lineTo(plot.right, zeroY);
+        context.stroke();
+
+        context.restore();
+      }
+
+      context.font = "bold 18px Calibri, Arial, sans-serif";
+      context.textAlign = "center";
+      context.textBaseline = "top";
+
+      context.fillText(
+        title,
+        (plot.left + plot.right) / 2,
+        10
+      );
+
+      context.font = "15px Calibri, Arial, sans-serif";
+
+      context.fillText(
+        xLabel,
+        (plot.left + plot.right) / 2,
+        height - 27
+      );
+
+      context.save();
+
+      context.translate(
+        18,
+        (plot.top + plot.bottom) / 2
+      );
+
+      context.rotate(-Math.PI / 2);
+      context.textAlign = "center";
+      context.textBaseline = "top";
+      context.fillText(yLabel, 0, 0);
+
+      context.restore();
+      context.restore();
+    }
+
+
+    function drawPolyline(
+      context,
+      xValues,
+      yValues,
+      plot,
+      color,
+      lineWidth,
+      dashPattern
+    ) {
+      context.save();
+      context.strokeStyle = color;
+      context.lineWidth = lineWidth;
+      context.setLineDash(dashPattern || []);
+      context.beginPath();
+
+      for (let i = 0; i < xValues.length; i++) {
+        const pixelX = xToPixel(
+          xValues[i],
+          plot.xMinimum,
+          plot.xMaximum,
+          plot.left,
+          plot.right
+        );
+
+        const pixelY = yToPixel(
+          yValues[i],
+          plot.yMinimum,
+          plot.yMaximum,
+          plot.top,
+          plot.bottom
+        );
+
+        if (i === 0) {
+          context.moveTo(pixelX, pixelY);
+        } else {
+          context.lineTo(pixelX, pixelY);
+        }
+      }
+
+      context.stroke();
+      context.restore();
+    }
+
+
+    function drawVerticalMarker(
+      context,
+      xValue,
+      plot,
+      color,
+      label
+    ) {
+      if (
+        xValue < plot.xMinimum ||
+        xValue > plot.xMaximum
+      ) {
+        return;
+      }
+
+      const pixelX = xToPixel(
+        xValue,
+        plot.xMinimum,
+        plot.xMaximum,
+        plot.left,
+        plot.right
+      );
+
+      context.save();
+      context.strokeStyle = color;
+      context.fillStyle = color;
+      context.lineWidth = 2;
+      context.setLineDash([7, 5]);
+
+      context.beginPath();
+      context.moveTo(pixelX, plot.top);
+      context.lineTo(pixelX, plot.bottom);
+      context.stroke();
+
+      context.setLineDash([]);
+      context.font = "bold 14px Calibri, Arial, sans-serif";
+      context.textAlign = "center";
+      context.textBaseline = "top";
+
+      context.fillText(
+        label,
+        pixelX,
+        plot.top + 7
+      );
+
+      context.restore();
+    }
+
+
+    function calculateWaveData(parameters) {
+      const xValues = linspace(
+        -parameters.xLimit,
+        parameters.xLimit,
+        2500
+      );
+
+      let kValues = [];
+      let weights = [];
+      let title = "";
+      let equation = "";
+
+      if (parameters.waveMode === "single") {
+        kValues = [parameters.k0];
+        weights = [1];
+
+        title = "Single Traveling Wave";
+        equation = "ψ(x,t) = A cos(k₀x − ω₀t)";
+      }
+
+      if (parameters.waveMode === "two") {
+        kValues = [
+          parameters.k0 - parameters.deltaK / 2,
+          parameters.k0 + parameters.deltaK / 2
+        ];
+
+        weights = [1, 1];
+
+        title = "Two-Wave Traveling Packet";
+
+        equation =
+          "ψ(x,t) = A cos(k₁x − ω₁t) + " +
+          "A cos(k₂x − ω₂t)";
+      }
+
+      if (parameters.waveMode === "gaussian") {
+        let kMinimum =
+          parameters.k0 - 2.5 * parameters.deltaK;
+
+        const kMaximum =
+          parameters.k0 + 2.5 * parameters.deltaK;
+
+        kMinimum = Math.max(0.02, kMinimum);
+
+        kValues = linspace(
+          kMinimum,
+          kMaximum,
+          parameters.numberWaves
+        );
+
+        weights = kValues.map(
+          k => gaussianWeight(
+            k,
+            parameters.k0,
+            parameters.deltaK
+          )
+        );
+
+        title = "Gaussian Traveling Wave Packet";
+
+        equation =
+          "ψ(x,t) = Σ A(kₙ) cos[kₙx − ω(kₙ)t]";
+      }
+
+      const weightSum =
+        weights.reduce((sum, value) => sum + value, 0);
+
+      const components = [];
+
+      for (let index = 0; index < kValues.length; index++) {
+        const k = kValues[index];
+
+        const angularFrequency = omega(
+          k,
+          parameters.dispersion,
+          parameters.c,
+          parameters.alpha
+        );
+
+        const componentAmplitude =
+          parameters.amplitude *
+          weights[index] /
+          weightSum;
+
+        const component = xValues.map(
+          x => componentAmplitude *
+          Math.cos(
+            k * x -
+            angularFrequency * parameters.time
+          )
+        );
+
+        components.push(component);
+      }
+
+      const resultWave =
+        new Array(xValues.length).fill(0);
+
+      for (const component of components) {
+        for (let i = 0; i < component.length; i++) {
+          resultWave[i] += component[i];
+        }
+      }
+
+      /*
+       * Approximate envelope used for the visual overlay.
+       * The envelope center follows the group velocity.
+       */
+      const groupSpeed = groupVelocity(
+        parameters.k0,
+        parameters.dispersion,
+        parameters.c,
+        parameters.alpha
+      );
+
+      const groupCenter = groupSpeed * parameters.time;
+
+      let envelope;
+
+      if (parameters.waveMode === "single") {
+        envelope = xValues.map(
+          () => parameters.amplitude
+        );
+      } else if (parameters.waveMode === "two") {
+        const deltaOmega =
+          omega(
+            kValues[1],
+            parameters.dispersion,
+            parameters.c,
+            parameters.alpha
+          ) -
+          omega(
+            kValues[0],
+            parameters.dispersion,
+            parameters.c,
+            parameters.alpha
+          );
+
+        envelope = xValues.map(
+          x => parameters.amplitude *
+          Math.cos(
+            parameters.deltaK * x / 2 -
+            deltaOmega * parameters.time / 2
+          )
+        );
+      } else {
+        /*
+         * For linear dispersion this is exact up to the finite
+         * numerical spectrum. For quadratic dispersion, a simple
+         * spreading model is included for the overlay.
+         */
+        let widthFactor = 1;
+
+        if (parameters.dispersion === "quadratic") {
+          widthFactor = Math.sqrt(
+            1 +
+            Math.pow(
+              2 *
+              parameters.alpha *
+              parameters.deltaK *
+              parameters.deltaK *
+              parameters.time,
+              2
+            )
+          );
+        }
+
+        const effectiveSigma =
+          parameters.deltaK / widthFactor;
+
+        const envelopeAmplitude =
+          parameters.amplitude /
+          Math.sqrt(widthFactor);
+
+        envelope = xValues.map(
+          x => envelopeAmplitude *
+          Math.exp(
+            -0.5 *
+            Math.pow(
+              effectiveSigma * (x - groupCenter),
+              2
+            )
+          )
+        );
+      }
+
+      return {
+        xValues: xValues,
+        resultWave: resultWave,
+        components: components,
+        envelope: envelope,
+        title: title,
+        equation: equation,
+        groupCenter: groupCenter
+      };
+    }
+
+
+    function drawTravelingWave(
+      canvas,
+      data,
+      parameters
+    ) {
+      const setup = setupCanvas(canvas);
+      const context = setup.context;
+      const width = setup.width;
+      const height = setup.height;
+
+      let scaleMaximum = parameters.amplitude;
+
+      for (const value of data.resultWave) {
+        scaleMaximum = Math.max(
+          scaleMaximum,
+          Math.abs(value)
+        );
+      }
+
+      const plot = {
+        left: 82,
+        right: width - 25,
+        top: 55,
+        bottom: height - 63,
+        xMinimum: -parameters.xLimit,
+        xMaximum: parameters.xLimit,
+        yMinimum: -1.2 * scaleMaximum,
+        yMaximum: 1.2 * scaleMaximum
+      };
+
+      drawAxes(
+        context,
+        width,
+        height,
+        plot,
+        data.title,
+        "Position, x",
+        "Wave amplitude"
+      );
+
+      if (parameters.showComponents) {
+        data.components.forEach((component, index) => {
+          const hue =
+            Math.round(280 * index / data.components.length);
+
+          drawPolyline(
+            context,
+            data.xValues,
+            component,
+            plot,
+            `hsla(${hue}, 65%, 43%, 0.25)`,
+            1,
+            []
+          );
+        });
+      }
+
+      drawPolyline(
+        context,
+        data.xValues,
+        data.resultWave,
+        plot,
+        "black",
+        2.2,
+        []
+      );
+
+      if (
+        parameters.showEnvelope &&
+        parameters.waveMode !== "single"
+      ) {
+        drawPolyline(
+          context,
+          data.xValues,
+          data.envelope,
+          plot,
+          "#156082",
+          2,
+          [7, 5]
+        );
+
+        drawPolyline(
+          context,
+          data.xValues,
+          data.envelope.map(value => -value),
+          plot,
+          "#156082",
+          2,
+          [7, 5]
+        );
+      }
+
+      if (parameters.showMarkers) {
+        const phaseSpeed = phaseVelocity(
+          parameters.k0,
+          parameters.dispersion,
+          parameters.c,
+          parameters.alpha
+        );
+
+        const phasePosition =
+          phaseSpeed * parameters.time;
+
+        drawVerticalMarker(
+          context,
+          phasePosition,
+          plot,
+          "#111111",
+          "phase"
+        );
+
+        if (parameters.waveMode !== "single") {
+          drawVerticalMarker(
+            context,
+            data.groupCenter,
+            plot,
+            "#156082",
+            "group"
+          );
+        }
+      }
+    }
+
+
+    function drawProbabilityPlot(
+      canvas,
+      data,
+      parameters
+    ) {
+      const setup = setupCanvas(canvas);
+      const context = setup.context;
+      const width = setup.width;
+      const height = setup.height;
+
+      const probability =
+        data.resultWave.map(value => value * value);
+
+      let yMaximum = Math.max(...probability);
+
+      if (yMaximum <= 0) {
+        yMaximum = 1;
+      }
+
+      const plot = {
+        left: 82,
+        right: width - 25,
+        top: 55,
+        bottom: height - 63,
+        xMinimum: -parameters.xLimit,
+        xMaximum: parameters.xLimit,
+        yMinimum: 0,
+        yMaximum: 1.12 * yMaximum
+      };
+
+      drawAxes(
+        context,
+        width,
+        height,
+        plot,
+        "Squared Wave Amplitude",
+        "Position, x",
+        "|ψ(x,t)|²"
+      );
+
+      drawPolyline(
+        context,
+        data.xValues,
+        probability,
+        plot,
+        "#156082",
+        2.2,
+        []
+      );
+
+      if (parameters.showMarkers) {
+        drawVerticalMarker(
+          context,
+          data.groupCenter,
+          plot,
+          "#156082",
+          "group"
+        );
+      }
+    }
+
+
+    function drawDispersionPlot(canvas, parameters) {
+      const setup = setupCanvas(canvas);
+      const context = setup.context;
+      const width = setup.width;
+      const height = setup.height;
+
+      const kMaximum = Math.max(
+        3.5,
+        parameters.k0 + 1.7 * parameters.deltaK
+      );
+
+      const kValues = linspace(0, kMaximum, 500);
+
+      const omegaValues = kValues.map(
+        k => omega(
+          k,
+          parameters.dispersion,
+          parameters.c,
+          parameters.alpha
+        )
+      );
+
+      const omegaMaximum =
+        Math.max(...omegaValues) * 1.12;
+
+      const plot = {
+        left: 82,
+        right: width - 25,
+        top: 55,
+        bottom: height - 63,
+        xMinimum: 0,
+        xMaximum: kMaximum,
+        yMinimum: 0,
+        yMaximum: omegaMaximum
+      };
+
+      drawAxes(
+        context,
+        width,
+        height,
+        plot,
+        "Dispersion Relation",
+        "Wave number, k",
+        "Angular frequency, ω"
+      );
+
+      drawPolyline(
+        context,
+        kValues,
+        omegaValues,
+        plot,
+        "black",
+        2.2,
+        []
+      );
+
+      const omega0 = omega(
+        parameters.k0,
+        parameters.dispersion,
+        parameters.c,
+        parameters.alpha
+      );
+
+      const phaseSpeed = phaseVelocity(
+        parameters.k0,
+        parameters.dispersion,
+        parameters.c,
+        parameters.alpha
+      );
+
+      const groupSpeed = groupVelocity(
+        parameters.k0,
+        parameters.dispersion,
+        parameters.c,
+        parameters.alpha
+      );
+
+      /*
+       * Secant from origin:
+       * omega = v_phase k
+       */
+      const secantX = [0, parameters.k0];
+      const secantY = [0, omega0];
+
+      drawPolyline(
+        context,
+        secantX,
+        secantY,
+        plot,
+        "#111111",
+        1.8,
+        [7, 5]
+      );
+
+      /*
+       * Tangent at k0:
+       * omega = omega0 + v_group(k - k0)
+       */
+      const tangentStartK = Math.max(
+        0,
+        parameters.k0 - 0.75
+      );
+
+      const tangentEndK = Math.min(
+        kMaximum,
+        parameters.k0 + 0.75
+      );
+
+      const tangentX = [
+        tangentStartK,
+        tangentEndK
+      ];
+
+      const tangentY = tangentX.map(
+        k => omega0 + groupSpeed * (k - parameters.k0)
+      );
+
+      drawPolyline(
+        context,
+        tangentX,
+        tangentY,
+        plot,
+        "#156082",
+        2,
+        [7, 5]
+      );
+
+      const pointX = xToPixel(
+        parameters.k0,
+        plot.xMinimum,
+        plot.xMaximum,
+        plot.left,
+        plot.right
+      );
+
+      const pointY = yToPixel(
+        omega0,
+        plot.yMinimum,
+        plot.yMaximum,
+        plot.top,
+        plot.bottom
+      );
+
+      context.save();
+      context.fillStyle = "#b64a36";
+      context.beginPath();
+      context.arc(pointX, pointY, 5, 0, 2 * Math.PI);
+      context.fill();
+
+      context.font = "bold 14px Calibri, Arial, sans-serif";
+      context.textAlign = "left";
+      context.textBaseline = "bottom";
+
+      context.fillText(
+        "(k₀, ω₀)",
+        pointX + 8,
+        pointY - 5
+      );
+
+      context.restore();
+    }
+
+
+    function getParameters() {
+      return {
+        waveMode: elements.waveMode.value,
+        dispersion: elements.dispersion.value,
+        amplitude: Number(elements.amplitude.value),
+        k0: Number(elements.k0.value),
+        deltaK: Number(elements.deltaK.value),
+        numberWaves: Number(elements.numberWaves.value),
+        c: Number(elements.linearC.value),
+        alpha: Number(elements.quadraticAlpha.value),
+        time: Number(elements.time.value),
+        animationSpeed:
+          Number(elements.animationSpeed.value),
+
+        xLimit: Number(elements.xLimit.value),
+        showComponents: elements.showComponents.checked,
+        showEnvelope: elements.showEnvelope.checked,
+        showMarkers: elements.showMarkers.checked,
+        showProbability: elements.showProbability.checked
+      };
+    }
+
+
+    function updateLabels(parameters) {
+      elements.amplitudeValue.textContent =
+        parameters.amplitude.toFixed(1);
+
+      elements.k0Value.textContent =
+        parameters.k0.toFixed(2);
+
+      elements.deltaKValue.textContent =
+        parameters.deltaK.toFixed(2);
+
+      elements.numberWavesValue.textContent =
+        parameters.numberWaves;
+
+      elements.linearCValue.textContent =
+        parameters.c.toFixed(1);
+
+      elements.quadraticAlphaValue.textContent =
+        parameters.alpha.toFixed(2);
+
+      elements.timeValue.textContent =
+        parameters.time.toFixed(2);
+
+      elements.animationSpeedValue.textContent =
+        parameters.animationSpeed.toFixed(1) + "×";
+
+      elements.xLimitValue.textContent =
+        parameters.xLimit;
+    }
+
+
+    function updateInterfaceVisibility(parameters) {
+      const isSingle =
+        parameters.waveMode === "single";
+
+      const isGaussian =
+        parameters.waveMode === "gaussian";
+
+      elements.deltaKControl.style.display =
+        isSingle ? "none" : "block";
+
+      elements.numberWavesControl.style.display =
+        isGaussian ? "block" : "none";
+
+      elements.showComponents.disabled = isSingle;
+      elements.showEnvelope.disabled = isSingle;
+
+      elements.linearParameterControl.style.display =
+        parameters.dispersion === "linear"
+          ? "block"
+          : "none";
+
+      elements.quadraticParameterControl.style.display =
+        parameters.dispersion === "quadratic"
+          ? "block"
+          : "none";
+    }
+
+
+    function updateMetrics(parameters) {
+      const omega0 = omega(
+        parameters.k0,
+        parameters.dispersion,
+        parameters.c,
+        parameters.alpha
+      );
+
+      const vp = phaseVelocity(
+        parameters.k0,
+        parameters.dispersion,
+        parameters.c,
+        parameters.alpha
+      );
+
+      const vg = groupVelocity(
+        parameters.k0,
+        parameters.dispersion,
+        parameters.c,
+        parameters.alpha
+      );
+
+      const lambda0 =
+        2 * Math.PI / parameters.k0;
+
+      elements.lambdaMetric.textContent =
+        lambda0.toFixed(3);
+
+      elements.omegaMetric.textContent =
+        omega0.toFixed(3);
+
+      elements.phaseVelocityMetric.textContent =
+        vp.toFixed(3);
+
+      elements.groupVelocityMetric.textContent =
+        vg.toFixed(3);
+
+      if (parameters.dispersion === "linear") {
+        elements.dispersionEquation.textContent =
+          "ω(k) = ck,     vₚ = c,     v\u2099 = c";
+      } else {
+        elements.dispersionEquation.textContent =
+          "ω(k) = αk²,     vₚ = αk,     v\u2099 = 2αk";
+      }
+    }
+
+
+    function updateApp() {
+      const parameters = getParameters();
+
+      updateLabels(parameters);
+      updateInterfaceVisibility(parameters);
+      updateMetrics(parameters);
+
+      const data = calculateWaveData(parameters);
+
+      elements.waveHeading.textContent = data.title;
+      elements.waveEquation.textContent = data.equation;
+
+      drawDispersionPlot(
+        elements.dispersionCanvas,
+        parameters
+      );
+
+      drawTravelingWave(
+        elements.waveCanvas,
+        data,
+        parameters
+      );
+
+      if (parameters.showProbability) {
+        elements.probabilitySection.style.display =
+          "block";
+
+        drawProbabilityPlot(
+          elements.probabilityCanvas,
+          data,
+          parameters
+        );
+      } else {
+        elements.probabilitySection.style.display =
+          "none";
+      }
+    }
+
+
+    function animationLoop(timestamp) {
+      if (!animationRunning) {
+        previousTimestamp = null;
+        return;
+      }
+
+      if (previousTimestamp === null) {
+        previousTimestamp = timestamp;
+      }
+
+      const elapsedSeconds =
+        (timestamp - previousTimestamp) / 1000;
+
+      previousTimestamp = timestamp;
+
+      const speed =
+        Number(elements.animationSpeed.value);
+
+      let newTime =
+        Number(elements.time.value) +
+        elapsedSeconds * speed;
+
+      const maximumTime =
+        Number(elements.time.max);
+
+      if (newTime > maximumTime) {
+        newTime = 0;
+      }
+
+      elements.time.value = newTime;
+      updateApp();
+
+      requestAnimationFrame(animationLoop);
+    }
+
+
+    elements.playButton.addEventListener(
+      "click",
+      () => {
+        if (!animationRunning) {
+          animationRunning = true;
+          previousTimestamp = null;
+          requestAnimationFrame(animationLoop);
+        }
+      }
+    );
+
+
+    elements.pauseButton.addEventListener(
+      "click",
+      () => {
+        animationRunning = false;
+        previousTimestamp = null;
+      }
+    );
+
+
+    elements.resetButton.addEventListener(
+      "click",
+      () => {
+        animationRunning = false;
+        previousTimestamp = null;
+        elements.time.value = 0;
+        updateApp();
+      }
+    );
+
+
+    const interactiveControls = [
+      elements.waveMode,
+      elements.dispersion,
+      elements.amplitude,
+      elements.k0,
+      elements.deltaK,
+      elements.numberWaves,
+      elements.linearC,
+      elements.quadraticAlpha,
+      elements.time,
+      elements.animationSpeed,
+      elements.xLimit,
+      elements.showComponents,
+      elements.showEnvelope,
+      elements.showMarkers,
+      elements.showProbability
+    ];
+
+    interactiveControls.forEach(control => {
+      control.addEventListener("input", updateApp);
+      control.addEventListener("change", updateApp);
+    });
+
+
+    let resizeTimer;
+
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+
+      resizeTimer = setTimeout(
+        updateApp,
+        150
+      );
+    });
+
+
+    updateApp();
+  </script>
+</body>
+</html>
